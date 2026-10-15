@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>יואלי אקספרס | האינדקס החרדי הפרימיום</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Playfair+Display:wght@600;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brandDark: '#121212',
+                        brandGold: '#c5a059',
+                        brandLight: '#fbfbfb',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08); }
+        .product-hover:hover img { transform: scale(1.05); }
+        .product-hover img { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    </style>
+</head>
+<body class="bg-brandLight text-brandDark font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <div>
+        <!-- Top Announcement Bar -->
+        <div class="bg-brandDark text-white text-xs py-2 px-4 text-center font-medium tracking-wider">
+            ✨ הקישורים הנבחרים והבדוקים ביותר לציבור החרדי והדתי • מעודכן לשנת 2026
+        </div>
+
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl font-serif font-black tracking-tight text-brandDark">יואלי<span class="text-brandGold">אקספרס</span></span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleUserSubmitModal()" class="text-xs bg-brandGold text-white px-4 py-2 font-bold rounded-full hover:bg-brandDark transition-colors">
+                        🎁 הצע קישור והכנס להגרלה
+                    </button>
+                    <button onclick="toggleAdminModal()" class="text-xs bg-brandDark text-white px-4 py-2 font-bold rounded-full hover:bg-brandGold transition-colors">
+                        ניהול
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Banner for User Submissions / Raffle -->
+        <section class="max-w-7xl mx-auto px-6 mt-8">
+            <div class="bg-gradient-to-r from-brandDark to-gray-800 text-white rounded-3xl p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
+                <div>
+                    <span class="bg-brandGold text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">קהילת יואלי אקספרס</span>
+                    <h2 class="font-serif text-3xl md:text-4xl font-bold mt-3 mb-2">מצאת מוצר מנצח באליאקספרס או שיין?</h2>
+                    <p class="text-gray-300 text-sm md:text-base max-w-xl">שלח לנו את הקישור הבדוק שלך, עזור לציבור להימנע מנפילות, היכנס אוטומטית להגרלת הפרסים הגדולה, ואנחנו נפרסם אותו באתר!</p>
+                </div>
+                <button onclick="toggleUserSubmitModal()" class="bg-brandGold text-brandDark font-bold px-8 py-4 rounded-full text-base hover:bg-white transition-colors whitespace-nowrap shadow-lg">
+                    הצע קישור עכשיו ↗
+                </button>
+            </div>
+        </section>
+
+        <!-- Hero & Search Section -->
+        <section class="max-w-4xl mx-auto px-6 pt-12 pb-8 text-center">
+            <h1 class="font-serif text-4xl md:text-6xl font-black mb-4 text-brandDark">אינדקס הרכישות החכם</h1>
+            <p class="text-gray-600 text-lg mb-8 max-w-xl mx-auto">בלי נפילות ובלי הימורים. מוצרים שנבחרו בקפידה ועברו את מבחן הקהילה.</p>
+            
+            <div class="relative max-w-2xl mx-auto">
+                <input type="text" id="searchInput" oninput="filterProducts()" placeholder="חפש לפי שם מוצר, חנות או קטגוריה..." class="w-full h-14 pr-12 pl-6 bg-white border-2 border-gray-200 rounded-full text-lg shadow-sm focus:outline-none focus:border-brandGold transition-all">
+                <span class="absolute right-4 top-4 text-2xl text-gray-400">🔍</span>
+            </div>
+        </section>
+
+        <!-- Categories Filter -->
+        <div class="max-w-7xl mx-auto px-6 mb-12 flex flex-wrap justify-center gap-2" id="categoryButtons"></div>
+
+        <!-- Main Product Grid -->
+        <main class="max-w-7xl mx-auto px-6 pb-24">
+            <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="noResults" class="hidden text-center py-20 text-gray-400 text-xl font-serif">
+                לא נמצאו מוצרים תואמים לחיפוש שלך.
+            </div>
+        </main>
+    </div>
+
+    <!-- User Submit Modal (הצעת קישור לגולשים) -->
+    <div id="userSubmitModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-8 shadow-2xl relative">
+            <button onclick="toggleUserSubmitModal()" class="absolute left-6 top-6 text-gray-400 hover:text-black text-xl font-bold">✕</button>
+            <h3 class="font-serif text-2xl font-bold mb-2">הצעת קישור להגרלה ולפרסום</h3>
+            <p class="text-xs text-gray-500 mb-6">הפרטים שלך יועברו לבדיקה של צוות יואלי אקספרס.</p>
+            
+            <form onsubmit="submitUserProduct(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">שם המוצר</label>
+                    <input type="text" id="userTitle" required placeholder="לדוגמה: שמלת שבת מהממת" class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">קישור למוצר (AliExpress / Shein / Next)</label>
+                    <input type="url" id="userLink" required placeholder="https://..." class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">השם שלך</label>
+                        <input type="text" id="userName" required placeholder="ישראל ישראלי" class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">טלפון / וואטסאפ לחזרה</label>
+                        <input type="text" id="userContact" required placeholder="050-0000000" class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">למה כדאי לקנות אותו? (חוות דעת קצרה)</label>
+                    <textarea id="userDesc" rows="2" required placeholder="הגיע תוך שבוע, איכות בד מעולה..." class="w-full p-3 border rounded-xl focus:border-brandGold outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full py-4 bg-brandGold text-brandDark font-bold rounded-xl hover:bg-brandDark hover:text-white transition-colors">
+                    שלח לבדיקה והיכנס להגרלה 🚀
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Modal (ניהול פנימי שלך) -->
+    <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-8 shadow-2xl relative">
+            <button onclick="toggleAdminModal()" class="absolute left-6 top-6 text-gray-400 hover:text-black text-xl font-bold">✕</button>
+            <h3 class="font-serif text-2xl font-bold mb-6">פאנל ניהול - הוספת מוצר לאתר</h3>
+            
+            <form id="productForm" onsubmit="addNewProduct(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">שם המוצר</label>
+                    <input type="text" id="newTitle" required class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">קטגוריה</label>
+                        <select id="newCategory" class="w-full p-3 border rounded-xl focus:border-brandGold outline-none bg-white">
+                            <option value="נשים - חרדי קפדני">נשים - חרדי קפדני</option>
+                            <option value="נשים - מודרני (שסע/פתוח)">נשים - מודרני (שסע/פתוח)</option>
+                            <option value="גברים">גברים</option>
+                            <option value="ילדים ותינוקות">ילדים ותינוקות</option>
+                            <option value="לבית ולשבת">לבית ולשבת</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">מחיר</label>
+                        <input type="text" id="newPrice" placeholder="₪120" required class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">חנות</label>
+                        <input type="text" id="newStore" placeholder="AliExpress" required class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">קישור אפיליאייט</label>
+                        <input type="url" id="newLink" placeholder="https://..." required class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">קישור לתמונה (URL)</label>
+                    <input type="url" id="newImage" placeholder="https://images.unsplash.com/..." required class="w-full p-3 border rounded-xl focus:border-brandGold outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">תיאור והמלצה</label>
+                    <textarea id="newDesc" rows="2" class="w-full p-3 border rounded-xl focus:border-brandGold outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full py-4 bg-brandDark text-white font-bold rounded-xl hover:bg-brandGold transition-colors">
+                    פרסם מוצר באתר מיד
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-8 text-center text-sm text-gray-500">
+        <p>© 2026 יואלי אקספרס • כל הזכויות שמורות לפלטפורמת ההמלצות המובילה.</p>
+    </footer>
+
+    <script>
+        // הגדרת מספר הוואטסאפ שלך לקבלת הצעות מגולשים (שנה למספר שלך עם קידומת בינלאומית, לדוגמה 972501234567)
+        const MY_WHATSAPP_NUMBER = "972500000000"; 
+
+        let products = JSON.parse(localStorage.getItem('yuali_products')) || [
+            {
+                id: 1,
+                title: 'שמלת שבת קלאסית מאורכת',
+                category: 'נשים - חרדי קפדני',
+                price: '₪145',
+                store: 'AliExpress',
+                image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800',
+                link: 'https://www.aliexpress.com',
+                desc: 'בד נופל, לא שקוף כלל, נראה יוקרתי מאוד באירועים.'
+            },
+            {
+                id: 2,
+                title: 'חצאית מידי מעטפת (מודרני)',
+                category: 'נשים - מודרני (שסע/פתוח)',
+                price: '₪89',
+                store: 'Shein',
+                image: 'https://images.unsplash.com/photo-1583496924840-02bf7cc0f269?w=800',
+                link: 'https://www.shein.com',
+                desc: 'גזרה מחמיאה עם שסע עדין ומודרני. איכות תפירה גבוהה.'
+            }
+        ];
+
+        let activeCategory = 'הכל';
+
+        function renderCategories() {
+            const categories = ['הכל', 'נשים - חרדי קפדני', 'נשים - מודרני (שסע/פתוח)', 'גברים', 'ילדים ותינוקות', 'לבית ולשבת'];
+            const container = document.getElementById('categoryButtons');
+            container.innerHTML = '';
+
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `px-5 py-2.5 rounded-full text-sm font-bold transition-all ${activeCategory === cat ? 'bg-brandDark text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:border-brandDark'}`;
+                btn.innerText = cat;
+                btn.onclick = () => {
+                    activeCategory = cat;
+                    renderCategories();
+                    renderProducts();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const noResults = document.getElementById('noResults');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            grid.innerHTML = '';
+
+            const filtered = products.filter(p => {
+                const matchesCat = activeCategory === 'הכל' || p.category === activeCategory;
+                const matchesSearch = p.title.toLowerCase().includes(searchTerm) || p.store.toLowerCase().includes(searchTerm) || p.desc.toLowerCase().includes(searchTerm);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                noResults.classList.remove('hidden');
+                return;
+            } else {
+                noResults.classList.add('hidden');
+            }
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-3xl overflow-hidden custom-shadow product-hover border border-gray-100 flex flex-col justify-between';
+                card.innerHTML = `
+                    <div>
+                        <div class="relative h-80 overflow-hidden bg-gray-100">
+                            <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
+                            <span class="absolute top-4 right-4 bg-brandDark text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">${p.store}</span>
+                        </div>
+                        <div class="p-6">
+                            <span class="text-xs font-bold text-brandGold uppercase tracking-widest block mb-2">${p.category}</span>
+                            <h3 class="font-serif text-2xl font-bold mb-3 text-brandDark leading-tight">${p.title}</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed mb-6">${p.desc}</p>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-6 pt-2 flex items-center justify-between border-t border-gray-100">
+                        <span class="text-2xl font-black text-brandDark">${p.price}</span>
+                        <a href="${p.link}" target="_blank" class="bg-brandDark text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-brandGold transition-colors">
+                            לקנייה בטוחה ↗
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterProducts() { renderProducts(); }
+        function toggleAdminModal() { document.getElementById('adminModal').classList.toggle('hidden'); }
+        function toggleUserSubmitModal() { document.getElementById('userSubmitModal').classList.toggle('hidden'); }
+
+        // שליחת הצעת מוצר מגולש ישירות לוואטסאפ שלך
+        function submitUserProduct(e) {
+            e.preventDefault();
+            const title = document.getElementById('userTitle').value;
+            const link = document.getElementById('userLink').value;
+            const name = document.getElementById('userName').value;
+            const contact = document.getElementById('userContact').value;
+            const desc = document.getElementById('userDesc').value;
+
+            const message = `היי יואלי, הגשו מוצר חדש לאינדקס!\n\n📌 מוצר: ${title}\n🔗 קישור: ${link}\n👤 מציע: ${name}\n📞 טלפון: ${contact}\n📝 תיאור: ${desc}`;
+            
+            // פתיחת וואטסאפ אוטומטית עם הפרטים אלייך
+            const whatsappUrl = `https://wa.me/${MY_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+
+            toggleUserSubmitModal();
+            alert('הפרטים נשלחו בהצלחה! תודה רבה, נכנסת להגרלה.');
+        }
+
+        function addNewProduct(e) {
+            e.preventDefault();
+            const newP = {
+                id: Date.now(),
+                title: document.getElementById('newTitle').value,
+                category: document.getElementById('newCategory').value,
+                price: document.getElementById('newPrice').value,
+                store: document.getElementById('newStore').value,
+                link: document.getElementById('newLink').value,
+                image: document.getElementById('newImage').value,
+                desc: document.getElementById('newDesc').value
+            };
+
+            products.unshift(newP);
+            localStorage.setItem('yuali_products', JSON.stringify(products));
+            document.getElementById('productForm').reset();
+            toggleAdminModal();
+            renderProducts();
+            alert('המוצר נוסף בהצלחה לאינדקס!');
+        }
+
+        renderCategories();
+        renderProducts();
+    </script>
+</body>
+</html>
